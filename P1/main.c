@@ -1,7 +1,3 @@
-//
-// Created by expos on 24/01/2024.
-//
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,62 +9,64 @@
 
 //Calculate CRC
 //use unsigned short for 2 bytes instead of 1
-unsigned short calculateCRC(char *filename){ //pass filename as argument
-    int fd= open(filename, O_RDONLY);   //we open the file allowing only to read it
-    if(fd==-1){
-        perror("Error when the file is opened");
-        exit(5);
-    }
+ void generate(char *inputFilename){
 
-
-    unsigned short crc= INITIAL_REMINDER;
-    char buff;
-
-    while(read(fd, &buff,2)>0){
-        crc=crcSlow((unsigned char*)&buff,2);
-    }
-
-    close(fd);
-    return crc;
-
-}
-
-
-// Function to generate CRC file
-void generateCRCFile(char *inputFilename) {
-
-    //open input file
-
-
-
-    // Create CRC filename by appending ".crc" to the input filename
+    //create name of output file
     char crcFilename[256];
     strcpy(crcFilename, inputFilename);
     strcat(crcFilename, ".crc");
 
-    // Generate CRC value for the input file
-    unsigned short crc = calculateCRC(inputFilename);
 
-    // Open or create the CRC file
-    int crcFile = open(crcFilename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-    if (crcFile == -1) {
-        perror("Error creating CRC file");
+    // Open input file for reading
+    int inputFile = open(inputFilename, O_RDONLY);
+    if (inputFile == -1) {
+        printf("Couldn't open input file!");
         exit(5);
     }
 
-    // Write the calculated CRC to the CRC file
-    write(crcFile, &crc, sizeof(crc));
 
-    // Close the CRC file
+    // Open or create CRC file for writing with the name created before
+    int crcFile = open(crcFilename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (crcFile == -1) {
+        printf("Couldn't open CRC file!");
+        exit(5);
+    }
+
+    //initialize the CRC to 0
+    crc result=0;
+
+    char buff[256];
+    int bytesRead = 0;
+    // Read input file in blocks of 256 bytes and compute CRC
+    while ((bytesRead = read(inputFile, buff, sizeof(buff))) > 0) {
+        result = crcSlow((unsigned char*)buff, bytesRead);
+
+
+        // Write CRC to CRC file
+        write(crcFile, &result, sizeof(result));
+    }
+
+    close(inputFile);
     close(crcFile);
 
-    printf("CRC file generated: %s\n", crcFilename);
+
+}
+
+void verify( char *inputFile, int maxNumErrors){
+
+
+
+
+
+
 }
 
 
 
 
 
+
+/*
 
 // Function to verify CRC file
 void verifyCRCFile(char *filename, int maxNumErrors) {
@@ -146,5 +144,5 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
+*/
 

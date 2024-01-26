@@ -53,8 +53,7 @@
  * Returns:		The reflection of the original data.
  *
  *********************************************************************/
-static unsigned long
-reflect(unsigned long data, unsigned char nBits)
+static unsigned long reflect(unsigned long data, unsigned char nBits)
 {
 	unsigned long  reflection = 0x00000000;
 	unsigned char  bit;
@@ -91,9 +90,7 @@ reflect(unsigned long data, unsigned char nBits)
  * Returns:		The CRC of the message.
  *
  *********************************************************************/
-crc
-crcSlow(unsigned char const message[], int nBytes)
-{
+crc crcSlow(unsigned char const message[], int nBytes){
     crc            remainder = INITIAL_REMAINDER;
 	int            byte;
 	unsigned char  bit;
@@ -152,9 +149,7 @@ crc  crcTable[256];
  * Returns:		None defined.
  *
  *********************************************************************/
-void
-crcInit(void)
-{
+void crcInit(void){
     crc			   remainder;
 	int			   dividend;
 	unsigned char  bit;
@@ -208,9 +203,7 @@ crcInit(void)
  * Returns:		The CRC of the message.
  *
  *********************************************************************/
-crc
-crcFast(unsigned char const message[], int nBytes)
-{
+crc crcFast(unsigned char const message[], int nBytes){
     crc	           remainder = INITIAL_REMAINDER;
     unsigned char  data;
 	int            byte;
