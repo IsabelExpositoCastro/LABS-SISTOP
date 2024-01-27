@@ -5,8 +5,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "crc.c"
-#include "main.h"
+#import "crc.c"
+
 
 
 //Calculate CRC
@@ -117,44 +117,65 @@ void verify(char *inputFilename, int maxNumErrors) {
 }
 
 
+int main(int argc, char *argv[]) {
 
-int main(int argc, char* argv[]) {
-   // ... (unchanged)
+    // Check if there are enough arguments
+    if (argc < 3) {
+        printf("Incorrect number of arguments.\n");
+        exit(22);
+    }
 
+    // Parse command-line arguments
+    char *inputFilename = NULL;
+    int generateOption = 0;
+    int verifyOption = 0;
+    int maxNumErrors = 0;
 
-   // New command-line options
-   int generate = 0;
-   int verify = 0;
-   int maxNumErrors = 0;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-generate") == 0) {
+            generateOption = 1;
+        } else if (strcmp(argv[i], "-verify") == 0) {
+            verifyOption = 1;
+        } else if (strcmp(argv[i], "-maxNumErrors") == 0) {
+            if (i + 1 < argc) {
+                maxNumErrors = atoi(argv[i + 1]);
+                i++;  // Move to the next argument
+            } else {
+                printf("Invalid use of -maxNumErrors option.\n");
+                exit(22);
+            }
+        } else {
+            // Assume it's the input filename
+            if (inputFilename == NULL) {
+                inputFilename = argv[i];
+            } else {
+                // Invalid use of arguments
+                printf("Incorrect arguments.\n");
+                exit(22);
+            }
+        }
+    }
 
+    // Check if inputFilename is provided
+    if (inputFilename == NULL) {
+        printf("Input filename not provided.\n");
+        exit(22);
+    }
 
-   for (int i = 2; i < argc; i++) {
-       if (strcmp(argv[i], "-generate") == 0) {
-           generate = 1;
-       } else if (strcmp(argv[i], "-verify") == 0) {
-           verify = 1;
-       } else if (strcmp(argv[i], "-maxNumErrors") == 0) {
-           i += 1;
-           maxNumErrors = atoi(argv[i]);
-       }
-       // ... (Previous options remain unchanged)
-   }
+    // Start timer for profiling
 
+    // Generate CRC if -generate option is active
+    if (generateOption) {
+        generate(inputFilename);
+        printf("CRC file generated.\n");
+    }
 
-   // Call the appropriate function based on command-line arguments
-   if (generate) {
-       generateCRCFile(argv[1]);
-   }
+    // Verify CRC if -verify option is active
+    if (verifyOption) {
+        verify(inputFilename, maxNumErrors);
+    }
 
+    // End timer for profiling
 
-   if (verify) {
-       verifyCRCFile(argv[1], maxNumErrors);
-   }
-
-
-   // ... (Rest of the code remains unchanged)
-
-
-   return 0;
+    return 0;
 }
-

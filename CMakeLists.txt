@@ -10,4 +10,4 @@ add_executable(LABS_SISTOP
         P1/crc.c
         P1/crc.h
         P1/timer.c
-        P1/timer.h P1/main.c P1/main.h)
+        P1/timer.h P1/main.c)
