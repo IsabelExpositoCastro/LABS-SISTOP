@@ -3,9 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <fcntl.h>
-#import "crc.c"
+#include "crc.c"
 
 
 
@@ -36,7 +35,7 @@ void generate(char *inputFilename){
     crc result=0;
     // Buffer to read data in chunks
     char buff[256];
-    int bytesRead = 0;
+    int bytesRead ;
 
     // Read input file in blocks of 256 bytes and compute CRC
     while ((bytesRead = read(inputFile, buff, sizeof(buff))) > 0) {
@@ -76,10 +75,10 @@ void verify(char *inputFilename, int maxNumErrors) {
     }
 
     // Initialize the CRC to 0
-    crc result = 0;
+    crc result ;
     // Buffer to read data in chunks
     char buff[256];
-    int bytesRead = 0;
+    int bytesRead ;
     int numErrors = 0;
 
     // Read input file in blocks of 256 bytes and compare CRC
