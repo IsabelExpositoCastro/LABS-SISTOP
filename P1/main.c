@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include "crc.c"
+#include "crc.h"
 
 
 
@@ -83,6 +83,10 @@ void verify(char *inputFilename, int maxNumErrors) {
 
     // Read input file in blocks of 256 bytes and compare CRC
     while ((bytesRead = read(inputFile, buff, sizeof(buff))) > 0) {
+
+        // Introduce errors using corrupt.c before computing CRC
+        system("./corrupt input.txt -o corrupted_input.txt -numCorruptions 5");
+
         // Compute CRC for the current block
         result = crcSlow((unsigned char*)buff, bytesRead);
 
@@ -104,10 +108,15 @@ void verify(char *inputFilename, int maxNumErrors) {
                 close(inputFile);
                 close(crcFile);
                 exit(0);
-            } else {
-                printf("file OK\n");
             }
         }
+    }
+
+    // Check if there were any errors and print the final result
+    if (numErrors > 0) {
+        printf("file has errors\n");
+    } else {
+        printf("file OK\n");
     }
 
     // Close files

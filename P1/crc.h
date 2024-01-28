@@ -16,9 +16,13 @@
 #ifndef _crc_h
 #define _crc_h
 
+#include <stdint.h>
 
 #define FALSE	0
 #define TRUE	!FALSE
+
+// Define the type for crc
+typedef uint32_t crc;
 
 /*
  * Select the CRC standard from the list that follows.
@@ -28,7 +32,7 @@
 
 #if defined(CRC_CCITT)
 
-typedef unsigned short  crc;
+
 
 #define CRC_NAME			"CRC-CCITT"
 #define POLYNOMIAL			0x1021
@@ -40,7 +44,7 @@ typedef unsigned short  crc;
 
 #elif defined(CRC16)
 
-typedef unsigned short  crc;
+
 
 #define CRC_NAME			"CRC-16"
 #define POLYNOMIAL			0x8005
@@ -52,7 +56,6 @@ typedef unsigned short  crc;
 
 #elif defined(CRC32)
 
-typedef unsigned long  crc;
 
 #define CRC_NAME			"CRC-32"
 #define POLYNOMIAL			0x04C11DB7
@@ -61,6 +64,7 @@ typedef unsigned long  crc;
 #define REFLECT_DATA		TRUE
 #define REFLECT_REMAINDER	TRUE
 #define CHECK_VALUE			0xCBF43926
+
 
 #else
 
