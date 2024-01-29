@@ -215,7 +215,6 @@ int main(int argc, char *argv[]) {
         exit(22);
     }
 
-
     // Generate CRC if -generate option is active
     if (generateOption) {
         generate(inputFilename);
