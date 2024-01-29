@@ -105,7 +105,7 @@ void verify(char *inputFilename, int maxNumErrors) {
     while ((bytesRead = read(inputFile, buff, sizeof(buff))) > 0) {
 
         // Introduce errors using corrupt.c before computing CRC
-        system("./corrupt input.txt -o corrupted_input.txt -numCorruptions 5");
+        //system("./corrupt input.txt -o corrupted_input.txt -numCorruptions 5");
 
         // Compute CRC for the current block
         result = crcSlow((unsigned char*)buff, bytesRead);
@@ -148,8 +148,6 @@ void verify(char *inputFilename, int maxNumErrors) {
             }
         }
     }
-
-
 
     // Check if there were any errors and print the final result
     if (numErrors > 0) {
