@@ -5,11 +5,16 @@
 #include <string.h>
 #include <fcntl.h>
 #include "crc.h"
+#include <time.h>
 
 
 
 //Calculate CRC
 void generate(char *inputFilename){
+
+    //Start timer
+    clock_t start_time = clock();
+
 
     // Create CRC filename by appending ".crc" to the input filename
     char crcFilename[256];
@@ -49,10 +54,18 @@ void generate(char *inputFilename){
     close(inputFile);
     close(crcFile);
 
+    //End timer
+    clock_t end_time = clock();  // Record end time
+    double elapsed_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
+    printf("Time taken: %f seconds\n", elapsed_time);
+
 }
 
 
 void verify(char *inputFilename, int maxNumErrors) {
+
+    //Start timer
+    clock_t start_time = clock();
 
     // create the name for the output file once again
     char crcFilename[256];
@@ -122,6 +135,11 @@ void verify(char *inputFilename, int maxNumErrors) {
     // Close files
     close(inputFile);
     close(crcFile);
+
+    //End timer
+    clock_t end_time = clock();  // Record end time
+    double elapsed_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
+    printf("Time taken: %f seconds\n", elapsed_time);
 }
 
 
@@ -164,6 +182,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    //Start timer
+    clock_t start_time_total = clock();
+
     // Check if inputFilename is provided
     if (inputFilename == NULL) {
         printf("Input filename not provided.\n");
@@ -182,7 +203,11 @@ int main(int argc, char *argv[]) {
         verify(inputFilename, maxNumErrors);
     }
 
-    // End timer for profiling
+    // End timer
+    clock_t end_time_total = clock();  // Record end time
+    double elapsed_time_total = ((double) (end_time_total - start_time_total)) / CLOCKS_PER_SEC;
+    printf("Total time taken: %f seconds\n", elapsed_time_total);
+
 
     return 0;
 }
