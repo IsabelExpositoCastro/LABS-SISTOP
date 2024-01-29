@@ -3,7 +3,7 @@
 #include <unistd.h>    // Unix-like Syscalls:  _exit (low level), read, write,
 #include <fcntl.h>     // Unix-like Syscalls: open, close
 #include <string.h>    // strlen (length of a string array), strcpy
-#include <time.h>
+#include "time.h"
 #include <sys/stat.h>
 
 int getFileSize(char * filename){

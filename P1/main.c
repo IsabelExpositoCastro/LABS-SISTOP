@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include "crc.h"
-#include <time.h>
+#include "time.h"
 
 
 
@@ -47,6 +48,12 @@ void generate(char *inputFilename){
         result = crcSlow((unsigned char*)buff, bytesRead);
 
         // Write CRC to CRC file
+        write(crcFile, &result, sizeof(result));
+    }
+
+    // Handle the last block if its size is less than 256 bytes
+    if (bytesRead < sizeof(buff)) {
+        result = crcSlow((unsigned char*)buff, bytesRead);
         write(crcFile, &result, sizeof(result));
     }
 
@@ -123,7 +130,26 @@ void verify(char *inputFilename, int maxNumErrors) {
                 exit(0);
             }
         }
+
+        // Handle the last block if its size is less than 256 bytes
+        if (bytesRead < sizeof(buff)) {
+            result = crcSlow((unsigned char*)buff, bytesRead);
+            // Read CRC from CRC file
+            crc crcFromFileLastBlock;
+            if (read(crcFile, &crcFromFileLastBlock, sizeof(crc)) != sizeof(crc)) {
+                printf("Error reading CRC from file!");
+                close(inputFile);
+                close(crcFile);
+                exit(5);
+            }
+            // Compare CRC values for the last block
+            if (result != crcFromFileLastBlock) {
+                numErrors++;
+            }
+        }
     }
+
+
 
     // Check if there were any errors and print the final result
     if (numErrors > 0) {
