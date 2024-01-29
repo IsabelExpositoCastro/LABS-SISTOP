@@ -170,7 +170,6 @@ int main(int argc, char *argv[]) {
         exit(22);
     }
 
-    // Start timer for profiling
 
     // Generate CRC if -generate option is active
     if (generateOption) {
