@@ -40,7 +40,7 @@ void generate(char *inputFilename){
     // Initialize the CRC to 0
     crc result=0;
     // Buffer to read data in chunks
-    char buff[256];
+    unsigned char buff[256];
     int bytesRead ;
 
     // Read input file in blocks of 256 bytes and compute CRC
@@ -86,6 +86,15 @@ void verify(char *inputFilename, int maxNumErrors) {
         exit(5);
     }
 
+    crcInit();
+    // Initialize the CRC to 0
+    crc result ;
+    crc crcFromFile;
+    // Buffer to read data in chunks
+    unsigned char buff[256];
+    int bytesRead ;
+    int numErrors = 0;
+
     // we assume that the crcFile is already created from the generate function
     int crcFile = open(crcFilename, O_RDONLY);
     if (crcFile == -1) {
@@ -94,65 +103,44 @@ void verify(char *inputFilename, int maxNumErrors) {
         exit(5);
     }
 
-    // Initialize the CRC to 0
-    crc result ;
-    // Buffer to read data in chunks
-    char buff[256];
-    int bytesRead ;
-    int numErrors = 0;
-
     // Read input file in blocks of 256 bytes and compare CRC
     while ((bytesRead = read(inputFile, buff, sizeof(buff))) > 0) {
-
-        // Introduce errors using corrupt.c before computing CRC
-        //system("./corrupt input.txt -o corrupted_input.txt -numCorruptions 5");
-
         // Compute CRC for the current block
         result = crcSlow((unsigned char*)buff, bytesRead);
 
         // Read CRC from CRC file
-        crc crcFromFile;
         if (read(crcFile, &crcFromFile, sizeof(crc)) != sizeof(crc)) {
-            printf("Error reading CRC from file!");
-            close(inputFile);
-            close(crcFile);
-            exit(5);
+            // Error handling
         }
 
         // Compare CRC values
         if (result != crcFromFile) {
             numErrors++;
-            // Check if there are errors and print the result
-            if (numErrors > maxNumErrors) {
-                printf("file has errors\n");
-                close(inputFile);
-                close(crcFile);
-                exit(0);
-            }
-        }
-
-        // Handle the last block if its size is less than 256 bytes
-        if (bytesRead < sizeof(buff)) {
-            result = crcSlow((unsigned char*)buff, bytesRead);
-            // Read CRC from CRC file
-            crc crcFromFileLastBlock;
-            if (read(crcFile, &crcFromFileLastBlock, sizeof(crc)) != sizeof(crc)) {
-                printf("Error reading CRC from file!");
-                close(inputFile);
-                close(crcFile);
-                exit(5);
-            }
-            // Compare CRC values for the last block
-            if (result != crcFromFileLastBlock) {
-                numErrors++;
-            }
         }
     }
 
+    // Handle the last block if its size is less than 256 bytes
+    if (bytesRead < sizeof(buff)) {
+        result = crcSlow((unsigned char*)buff, bytesRead);
+        // Read CRC from CRC file for the last block
+        crc crcFromFileLastBlock;
+        if (read(crcFile, &crcFromFileLastBlock, sizeof(crc)) != sizeof(crc)) {
+            // Error handling
+        }
+
+        // Compare CRC values for the last block
+        if (result != crcFromFileLastBlock) {
+            numErrors++;
+        }
+    }
+
+
     // Check if there were any errors and print the final result
-    if (numErrors > 0) {
+    if (maxNumErrors > 0 && numErrors>maxNumErrors) {       //there is an input maximum number of errors
         printf("file has errors\n");
-    } else {
+    } else if(maxNumErrors==0 && numErrors!=0){
+        printf("file has errors\n");
+    } else{
         printf("file OK\n");
     }
 
