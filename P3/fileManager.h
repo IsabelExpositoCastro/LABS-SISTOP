@@ -2,6 +2,9 @@
 #include <pthread.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdio.h>
 
 typedef struct {
     int fdcrc;
