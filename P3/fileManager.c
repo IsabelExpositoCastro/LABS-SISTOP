@@ -1,27 +1,25 @@
 #include "fileManager.h"
+#include "myutils.h"
+#include <pthread.h>
+// initialize the mutex
+static pthread_mutex_t lock_initialized = PTHREAD_MUTEX_INITIALIZER;
 
 void  initialiseFdProvider(FileManager * fm, int argc, char **argv) {
-    // Complete the initialisation
+    // Complete the initialisation(statement)
 
-    // initialize the mutex
-    static pthread_mutex_t lock_initialized = PTHREAD_MUTEX_INITIALIZER;
+
     pthread_mutex_init(&lock_initialized, NULL);
 
 
     // lock the mutex
     pthread_mutex_lock(&lock_initialized);
 
-    // check if the mutex has ben initialized, no necessary but better
-    if (!lock_initialized) {
-        pthread_mutex_init(&lock, NULL);
-        lock_initialized = 1;
-    }
 
     // unlock the mutex after initialization is done
     pthread_mutex_unlock(&lock_initialized);
 
 
-    /* Your rest of the initailisation comes here*/
+    // Your rest of the initialisation comes here(statement)
 
 
 
@@ -38,7 +36,7 @@ void  initialiseFdProvider(FileManager * fm, int argc, char **argv) {
         char path[100];
         strcpy(path, argv[i+1]);
         strcat(path, ".crc");
-        fm->fdData[i] = open(argv[i+1], O_RDONLY); //here we changes the index initialization to 0 and so argv[i+1] instead of just argv[i]
+        fm->fdData[i] = open(argv[i+1], O_RDONLY); //here we change the index initialization to 0 and so argv[i+1] instead of just argv[i]
         fm->fdCRC[i] = open(path, O_RDONLY);
 
         fm->fileFinished[i] = 0;
@@ -57,6 +55,10 @@ void  destroyFdProvider(FileManager * fm) {
 }
 int getAndReserveFile(FileManager *fm, dataEntry * d) {
     // This function needs to be implemented by the students
+
+    //lock first
+    pthread_mutex_lock(&lock_initialized);
+
     int i;
     for (i = 0; i < fm->nFilesTotal; ++i) {
         if (fm->fileAvailable[i] && !fm->fileFinished[i]) {
@@ -64,23 +66,38 @@ int getAndReserveFile(FileManager *fm, dataEntry * d) {
             d->fddata = fm->fdData[i];
             d->index = i;
 
-            // You should mark that the file is not available
-            ??
+
+            // You should mark that the file is not available(statement)
+
+            //mark the non-available file
+            fm->fileAvailable[i]=0;
+
+            //unlock before returning
+            pthread_mutex_unlock(&lock_initialized);
 
             return 0;
         }
     }
+
+    //in case of not enter inside the if, also we have to unlock
+    pthread_mutex_unlock(&lock_initialized);
     return 1;
 }
+
+
 void unreserveFile(FileManager *fm,dataEntry * d) {
     fm->fileAvailable[d->index] = 1;
 }
 
+
+// we can use semaphores for synchronization between threads
 void markFileAsFinished(FileManager * fm, dataEntry * d) {
     fm->fileFinished[d->index] = 1;
     fm->nFilesRemaining--; //mark that a file has finished
+
     if (fm->nFilesRemaining == 0) {
         printf("All files have been processed\n");
         //TO COMPLETE: unblock all waiting threads, if needed
+        my_sem_signal(&semaphore);
     }
 }
