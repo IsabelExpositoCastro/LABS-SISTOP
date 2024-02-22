@@ -2,7 +2,29 @@
 
 void  initialiseFdProvider(FileManager * fm, int argc, char **argv) {
     // Complete the initialisation
+
+    // initialize the mutex
+    static pthread_mutex_t lock_initialized = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_init(&lock_initialized, NULL);
+
+
+    // lock the mutex
+    pthread_mutex_lock(&lock_initialized);
+
+    // check if the mutex has ben initialized, no necessary but better
+    if (!lock_initialized) {
+        pthread_mutex_init(&lock, NULL);
+        lock_initialized = 1;
+    }
+
+    // unlock the mutex after initialization is done
+    pthread_mutex_unlock(&lock_initialized);
+
+
     /* Your rest of the initailisation comes here*/
+
+
+
     fm->nFilesTotal = argc -1;
     fm->nFilesRemaining = fm->nFilesTotal;
     // Initialise enough memory to  store the arrays
@@ -12,11 +34,11 @@ void  initialiseFdProvider(FileManager * fm, int argc, char **argv) {
     fm->fileAvailable = malloc(sizeof(int) * fm->nFilesTotal);
 
     int i;
-    for (i = 1; i < fm->nFilesTotal +1; ++i) {
+    for (i = 0; i < fm->nFilesTotal ; ++i) {
         char path[100];
-        strcpy(path, argv[i]);
+        strcpy(path, argv[i+1]);
         strcat(path, ".crc");
-        fm->fdData[i] = open(argv[i], O_RDONLY);
+        fm->fdData[i] = open(argv[i+1], O_RDONLY); //here we changes the index initialization to 0 and so argv[i+1] instead of just argv[i]
         fm->fdCRC[i] = open(path, O_RDONLY);
 
         fm->fileFinished[i] = 0;
