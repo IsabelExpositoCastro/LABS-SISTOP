@@ -2,8 +2,8 @@
 #define MYUTILS
 
 #include <sys/time.h>
-#include <sys/types.h> 
-#include <netdb.h> 
+#include <sys/types.h>
+#include <netdb.h>
 #include <unistd.h>     // unix-like system calls read and write
 #include <fcntl.h>      // unix-like file handling : open
 #include <stdlib.h>     // standard C lib input output basic functions compatible with Windows
@@ -22,9 +22,9 @@ int read_split( int fin, char* buff, int maxlen, char* ch_end );
 
 // Semaphores implementation Using pthreads monitors
 typedef struct semaphore_struct {
-	int i;
-	pthread_mutex_t lock;
-	pthread_cond_t cond;
+    int i;
+    pthread_mutex_t lock;
+    pthread_cond_t cond;
 } my_semaphore;
 
 void my_sem_init(my_semaphore* sem, int i);

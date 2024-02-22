@@ -1,7 +1,4 @@
-
 #include "fileManager.h"
-
-
 
 void  initialiseFdProvider(FileManager * fm, int argc, char **argv) {
     // Complete the initialisation
@@ -25,8 +22,6 @@ void  initialiseFdProvider(FileManager * fm, int argc, char **argv) {
         fm->fileFinished[i] = 0;
         fm->fileAvailable[i] = 1;
     }
-    // initialize the mutex lock
-    pthread_mutex_init(&lock, NULL);
 }
 void  destroyFdProvider(FileManager * fm) {
     int i;
@@ -37,11 +32,9 @@ void  destroyFdProvider(FileManager * fm) {
     free(fm->fdData);
     free(fm->fdCRC);
     free(fm->fileFinished);
-    //destroy the mutex lock
-    pthread_mutex_destroy(&lock);
 }
-int getAndReserveFile(FileManager *fm, dataEntry *d) {
-    pthread_mutex_lock(&lock);
+int getAndReserveFile(FileManager *fm, dataEntry * d) {
+    // This function needs to be implemented by the students
     int i;
     for (i = 0; i < fm->nFilesTotal; ++i) {
         if (fm->fileAvailable[i] && !fm->fileFinished[i]) {
@@ -49,32 +42,23 @@ int getAndReserveFile(FileManager *fm, dataEntry *d) {
             d->fddata = fm->fdData[i];
             d->index = i;
 
-            //mark that the file is not available
-            fm->fileAvailable[i] = 0;
+            // You should mark that the file is not available
+            ??
 
-            pthread_mutex_unlock(&lock);
             return 0;
         }
     }
-    pthread_mutex_unlock(&lock);
     return 1;
 }
-void unreserveFile(FileManager *fm, dataEntry *d) {
-    pthread_mutex_lock(&lock);
+void unreserveFile(FileManager *fm,dataEntry * d) {
     fm->fileAvailable[d->index] = 1;
-    pthread_mutex_unlock(&lock);
 }
 
-void markFileAsFinished(FileManager *fm, dataEntry *d) {
-    pthread_mutex_lock(&lock);
-
+void markFileAsFinished(FileManager * fm, dataEntry * d) {
     fm->fileFinished[d->index] = 1;
-    fm->nFilesRemaining--;
-
+    fm->nFilesRemaining--; //mark that a file has finished
     if (fm->nFilesRemaining == 0) {
         printf("All files have been processed\n");
-        // unblock all waiting threads?
+        //TO COMPLETE: unblock all waiting threads, if needed
     }
-
-    pthread_mutex_unlock(&lock);
 }
