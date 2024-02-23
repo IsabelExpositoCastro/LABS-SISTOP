@@ -9,53 +9,55 @@
 
 #define N 4 // number of threads that we are going to create
 
-
 FileManager fm;
 
 void* worker_function(void * arg){
     // initialize the semaphore within the worker function
     my_semaphore *semaphore = (my_semaphore *)arg;
 
-
     while (1){
         dataEntry  d;
-        char *buff[256];
+        unsigned char buff[256];
         short int crc;
-        getAndReserveFile(&fm, &d); // Reserves a file. The release is missing. Where should you put it?: WE SHOULD PUT IT IN THE END AFTER THE IF
-        read(d.fdcrc, &crc, sizeof(short int));
-        int nBytesReadData = read(d.fddata, buff, 256);
+        getAndReserveFile(&fm, &d); // Reserves a file (it will later be released)
 
-        if (crc != crcSlow(buff, nBytesReadData)) {
-            printf("CRC error in file %d\n", d.filename);
+        if (d.fddata != -1 && d.fdcrc != -1) {  // firstly we should check if file is successfully reserved
+            read(d.fdcrc, &crc, sizeof(short int));
+            int nBytesReadData = read(d.fddata, buff, 256);
+
+            if (crc != crcSlow(buff, nBytesReadData)) {
+                printf("CRC error in file %d\n", d.index);
+            }
+
+            unreserveFile(&fm, &d);     // it is important to unreserve the file and it's done here!
+
+            // we have decided to add a sloop before processing the next file
+            sleep(1);
         }
-
-        unreserveFile(&fm, &d); //here we could have done:  markFileAsFinished(&fm, &d)
-        // optional sleep for a while before processing the next file
-        sleep(1);
-
-        my_sem_wait(semaphore);
+        // signal the semaphore outside of the critical section
+        my_sem_signal(semaphore);
     }
+    return NULL;
 }
 
 int main(int argc, char ** argv) {
+    // initialize FileManager
     initialiseFdProvider(&fm, argc, argv);
-
+    // initialize the semaphore
     my_semaphore semaphore;
-    my_sem_init(&semaphore, 0);
-    //With this adjustment, each worker thread will initialize its own semaphore,
-    //wait on it before processing the next file, and then continue its execution.
-    //This ensures that each worker thread waits independently on the semaphore without interfering with other threads.
+    my_sem_init(&semaphore, 0);     // each worker thread will initialize and release its own semaphore.
 
-
-
-    pthread_t threadID[N];      //as we can see this N refers to number of threads, which has to be defined before
+    // create an array to store the threads IDs
+    pthread_t threadID[N];      //this N refers to number of threads, which has to be defined before
     for (int i = 0; i < N; ++i) {
-
-        pthread_create(&threadID[i], NULL, worker_function, &semaphore);
+        pthread_create(&threadID[i], NULL, worker_function, (void*)&semaphore);
     }
-
+    // wait for worker threads to finish
     for (int i = 0; i < N; ++i) {
         pthread_join(threadID[i], NULL);
     }
+    // finally destroy the fileManager resources
     destroyFdProvider(&fm);
+
+    return 0;
 }

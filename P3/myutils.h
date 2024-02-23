@@ -27,6 +27,15 @@ typedef struct semaphore_struct {
     pthread_cond_t cond;
 } my_semaphore;
 
+// Declaration of the monitor_lock structure
+// no se si s'ha de fer aixo ????
+typedef struct monitor_lock_struct {
+    bool bInUse;
+    pthread_mutex_t lock;
+    pthread_cond_t cond_free;
+} monitor_lock;
+
+
 void my_sem_init(my_semaphore* sem, int i);
 void my_sem_wait(my_semaphore* sem);
 void my_sem_signal(my_semaphore* sem);

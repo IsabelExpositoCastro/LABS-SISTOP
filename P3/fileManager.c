@@ -1,28 +1,25 @@
 #include "fileManager.h"
 #include "myutils.h"
 #include <pthread.h>
-// initialize the mutex
+// initialize the mutex and semaphore
 static pthread_mutex_t lock_initialized = PTHREAD_MUTEX_INITIALIZER;
+static my_semaphore semaphore;
+
+// !!  If this mutex is meant to protect access to shared resources across multiple functions or threads,
+// then it makes sense. If it's specific to file management, you might want to encapsulate it in a local scope
+// or use a different mutex specific to file operations. ?????????? check after
 
 void  initialiseFdProvider(FileManager * fm, int argc, char **argv) {
-    // Complete the initialisation(statement)
-
-
-    pthread_mutex_init(&lock_initialized, NULL);
-
+    // Complete the initialisation
+    my_sem_init(&semaphore, 0);
 
     // lock the mutex
     pthread_mutex_lock(&lock_initialized);
 
-
     // unlock the mutex after initialization is done
     pthread_mutex_unlock(&lock_initialized);
 
-
     // Your rest of the initialisation comes here(statement)
-
-
-
     fm->nFilesTotal = argc -1;
     fm->nFilesRemaining = fm->nFilesTotal;
     // Initialise enough memory to  store the arrays
@@ -54,8 +51,6 @@ void  destroyFdProvider(FileManager * fm) {
     free(fm->fileFinished);
 }
 int getAndReserveFile(FileManager *fm, dataEntry * d) {
-    // This function needs to be implemented by the students
-
     //lock first
     pthread_mutex_lock(&lock_initialized);
 
@@ -65,9 +60,6 @@ int getAndReserveFile(FileManager *fm, dataEntry * d) {
             d->fdcrc = fm->fdCRC[i];
             d->fddata = fm->fdData[i];
             d->index = i;
-
-
-            // You should mark that the file is not available(statement)
 
             //mark the non-available file
             fm->fileAvailable[i]=0;
