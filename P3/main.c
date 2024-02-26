@@ -12,32 +12,31 @@
 FileManager fm;
 
 void* worker_function(void * arg){
-    // initialize the semaphore within the worker function
-    my_semaphore *semaphore = (my_semaphore *)arg;
-
-    while (1){
+    unsigned char *buff = malloc(256 * sizeof(unsigned char));
+    crc* crc = malloc(sizeof(crc));
+    while (fm.nFilesRemaining>0){
         dataEntry  d;
-        unsigned char buff[256];
-        short int crc;
         getAndReserveFile(&fm, &d); // Reserves a file (it will later be released)
 
         if (d.fddata != -1 && d.fdcrc != -1) {  // firstly we should check if file is successfully reserved
-            read(d.fdcrc, &crc, sizeof(short int));
+            read(d.fdcrc, &crc, sizeof(*crc));
             int nBytesReadData = read(d.fddata, buff, 256);
 
-            if (crc != crcSlow(buff, nBytesReadData)) {
+            if (*crc != crcSlow(buff, nBytesReadData)) {
                 printf("CRC error in file %d\n", d.index);
             }
 
             unreserveFile(&fm, &d);     // it is important to unreserve the file and it's done here!
+            markFileAsFinished(&fm, &d);
 
             // we have decided to add a sloop before processing the next file
             sleep(1);
         }
-        // signal the semaphore outside of the critical section
-        my_sem_signal(semaphore);
     }
-    return NULL;
+    free(crc);
+    free(buff);
+
+    exit(0);
 }
 
 int main(int argc, char ** argv) {
@@ -59,5 +58,5 @@ int main(int argc, char ** argv) {
     // finally destroy the fileManager resources
     destroyFdProvider(&fm);
 
-    return 0;
+    exit(0);
 }
