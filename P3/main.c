@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h> // for sleep function : waits for seconds
 
-#define N 4 // number of threads that we are going to create
+#define N 1 // number of threads that we are going to create
 
 FileManager fm;
 
@@ -48,7 +48,7 @@ void* worker_function(void * arg){
 int main(int argc, char ** argv) {
     // start a timer
     startTimer(0);
-    long timeTotal = 0;
+    //long timeTotal = 0;
 
     // initialize FileManager
     initialiseFdProvider(&fm, argc, argv);
@@ -69,7 +69,7 @@ int main(int argc, char ** argv) {
     // finally destroy the fileManager resources
     destroyFdProvider(&fm);
 
-    timeTotal += endTimer(0);
+    long timeTotal = endTimer(0);
     printf("total time taken: %ld \n", timeTotal);
     exit(0);
 }
