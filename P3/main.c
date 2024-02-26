@@ -12,19 +12,22 @@
 FileManager fm;
 
 void* worker_function(void * arg){
-    unsigned char *buff = malloc(256 * sizeof(unsigned char));
     crc* crc = malloc(sizeof(crc));
     while (fm.nFilesRemaining>0){
+        unsigned char buff[256];
+        //crc* crc;
         dataEntry  d;
         getAndReserveFile(&fm, &d); // Reserves a file (it will later be released)
 
         if (d.fddata != -1 && d.fdcrc != -1) {  // firstly we should check if file is successfully reserved
-            read(d.fdcrc, &crc, sizeof(*crc));
+            read(d.fdcrc, crc, sizeof(*crc));
             int nBytesReadData = read(d.fddata, buff, 256);
+
 
             if (*crc != crcSlow(buff, nBytesReadData)) {
                 printf("CRC error in file %d\n", d.index);
             }
+
 
             unreserveFile(&fm, &d);     // it is important to unreserve the file and it's done here!
             markFileAsFinished(&fm, &d);
@@ -34,7 +37,6 @@ void* worker_function(void * arg){
         }
     }
     free(crc);
-    free(buff);
 
     exit(0);
 }

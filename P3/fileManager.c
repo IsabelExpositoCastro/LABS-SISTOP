@@ -9,6 +9,7 @@ static my_semaphore semaphore;
 // then it makes sense. If it's specific to file management, you might want to encapsulate it in a local scope
 // or use a different mutex specific to file operations. ?????????? check after
 
+
 void  initialiseFdProvider(FileManager * fm, int argc, char **argv) {
     // Complete the initialisation
     my_sem_init(&semaphore, 0);
