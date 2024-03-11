@@ -8,10 +8,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 include_directories(P1)
 
 add_executable(LABS_SISTOP
-        P3/fileManager.c
-        P3/crc.c
-        P3/myutils.c
-        P3/main.c)
+        P5/main.c
+        P5/crc.c
+        P5/fileLock.c)
 
-target_include_directories(LABS_SISTOP PRIVATE P1)
+target_include_directories(LABS_SISTOP PRIVATE P1 P3)
 target_link_libraries(LABS_SISTOP pthread)

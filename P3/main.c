@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h> // for sleep function : waits for seconds
 
-#define N 1 // number of threads that we are going to create
+#define N 4 // number of threads that we are going to create
 
 FileManager fm;
 
