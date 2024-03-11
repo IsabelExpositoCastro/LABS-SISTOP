@@ -6,8 +6,8 @@
 #include <sys/stat.h>
 #include <time.h>   // for usleep waits for microsec
 #include <unistd.h> // for sleep: waits for seconds
-#include "crc.h"
-#include "fileLock.h"
+#include "../../../Desktop/Code/crc.h"
+#include "../../../Desktop/Code/fileLock.h"
 #define N 4
 
 typedef struct {
@@ -17,14 +17,12 @@ typedef struct {
 
 typedef struct {
     int nBlock;
-    short int crc;
+    unsigned short int crc;
 } Result;
 
 
 int main(int argc, char * argv[]) {
-
     int pipeA[2], pipeB[2];
-
     // Create two pipes. Also remember to close the channels when needed, otherwise it will not work!
     if (pipe(pipeA) == -1 || pipe(pipeB) == -1) {
         printf("Error creating pipes");
@@ -38,18 +36,9 @@ int main(int argc, char * argv[]) {
             close(pipeB[0]);  //close unused read end of B
 
             int fd = open(argv[1], O_RDONLY);
-            if (fd == -1) {
-                printf("Error opening data file");
-                exit(5);
-            }
             int fdCRC =open(argv[2], O_RDWR);
-            if (fdCRC == -1) {
-                printf("Error opening CRC file");
-                exit(5);
-            }
             Request r;
-            while(read(pipeA[0], &r, sizeof(r)) > 0) {      // read from pipe A which is still open
-
+            while( read(pipeA[0], &r, sizeof(r)) > 0) {     // read from pipe A which is still open
                 if (!r.isGet) {
                     // we acquire a lock and then update the CRC file
                     unsigned char buff[256];
@@ -59,18 +48,17 @@ int main(int argc, char * argv[]) {
                     file_unlock(fd, r.nBlock * sizeof(buff), sizeof(buff));
 
                     // Calculate CRC using crcSlow function
-                    unsigned char crc = crcSlow(buff, sizeof(buff));
+                    unsigned short int crc1 = crcSlow(buff, sizeof(buff));
 
                     // Update CRC file with the new CRC value
-                    file_lock_write(fdCRC, r.nBlock * sizeof(crc), sizeof(crc));
-                    lseek(fdCRC, r.nBlock * sizeof(crc), SEEK_SET);
-                    write(fdCRC, &crc, sizeof(crc));
-                    file_unlock(fdCRC, r.nBlock * sizeof(crc), sizeof(crc));
+                    file_lock_write(fdCRC, r.nBlock * sizeof(crc1), sizeof(crc1));
+                    lseek(fdCRC, r.nBlock * sizeof(crc1), SEEK_SET);
+                    write(fdCRC, &crc1, sizeof(crc1));
+                    file_unlock(fdCRC, r.nBlock * sizeof(crc1), sizeof(crc1));
+
                     /* Recompute the CRC, use lseek to get the correct datablock,
                     and store it in the correct position of the CRC file. Remember to use approppriate locks! */
-
                     usleep(rand()%1000 *1000); // Make the computation a bit slower
-
 
                 }
                 else{
@@ -85,12 +73,10 @@ int main(int argc, char * argv[]) {
 
                     // Write the result in pipeB!
                     write(pipeB[1], &res, sizeof(res));
-
                 }
             }
             close(pipeA[0]); //close the remaining parts of the pipe that were opened
             close(pipeB[1]);
-
             exit(0);
         }
     }
@@ -111,7 +97,6 @@ int main(int argc, char * argv[]) {
     }
     close(pipeA[1]);
     printf("FINISHED\n");
-
     while(wait(NULL) == -1);
 
     // Now that is finished, write all the results
